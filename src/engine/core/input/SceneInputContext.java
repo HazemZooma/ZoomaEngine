@@ -1,48 +1,63 @@
 package engine.core.input;
 
-import engine.command.Command;
-import engine.grahpics.RenderableObject;
+import command.Command;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SceneInputContext {
-    private final Map<Integer, Command> keyCommands = new HashMap<>();
-    private final Map<Integer, Command> mouseCommands = new HashMap<>();
-    private final double[] mouseCoordinates = new double[2];
+
+    private final Map<Integer, Command> keyBindings = new HashMap<>();
+    private final Map<Integer, Command> mouseBindings = new HashMap<>();
+
+    private final MouseInputData mouse = new MouseInputData();
 
     public void bindKey(int keyCode, Command command) {
-        keyCommands.put(keyCode, command);
+        keyBindings.put(keyCode, command);
     }
 
     public void bindMouse(int button, Command command) {
-        mouseCommands.put(button, command);
+        mouseBindings.put(button, command);
     }
 
-    public void handleKeyPressed(KeyEvent e) {
-        Command command = keyCommands.get(e.getKeyCode());
-        if (command != null) command.execute((RenderableObject) null);
+    public void onKeyPressed(int keyCode) {
+        Command cmd = keyBindings.get(keyCode);
+        if (cmd != null) cmd.execute();
     }
 
-    public void handleMousePressed(MouseEvent e, double glX, double glY) {
-        Command command = mouseCommands.get(e.getButton());
-        if (command != null) {
-            command.execute(new MouseInputData(glX, glY, e.getButton()));
-        }
+    public void onMousePressed(double x, double y, int button) {
+//        System.out.println("width : " + Math.abs(lastMouseX - x));
+//        System.out.println("height : " + Math.abs(lastMouseY - y));
+
+        mouse.updatePosition(x, y);
+        mouse.setPressed(true);
+        mouse.setReleased(false);
+        mouse.setButton(button);
+
+        Command cmd = mouseBindings.get(button);
+        if (cmd != null) cmd.execute();
     }
 
-    public void handleMouseMoved(double glX, double glY) {
-        mouseCoordinates[0] = glX;
-        mouseCoordinates[1] = glY;
-        Command command = mouseCommands.get(MouseEvent.NOBUTTON);
-        if (command != null) {
-            command.execute(new MouseInputData(glX, glY, 0));
-        }
+    public void onMouseReleased(double x, double y) {
+        mouse.updatePosition(x, y);
+        mouse.setPressed(false);
+        mouse.setReleased(true);
+
+        Command cmd = mouseBindings.get(mouse.getButton());
+        if (cmd != null) cmd.execute();
+
+        mouse.setButton(-1);
     }
 
-    public double[] getMouseCoordinates(){
-        return mouseCoordinates;
+    public void onMouseMoved(double x, double y) {
+        mouse.updatePosition(x, y);
+
+        Command cmd = mouseBindings.get(MouseEvent.NOBUTTON);
+        if (cmd != null) cmd.execute();
+    }
+
+    public MouseInputData getMouseState() {
+        return mouse;
     }
 }

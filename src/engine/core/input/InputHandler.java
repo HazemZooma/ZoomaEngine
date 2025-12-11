@@ -1,46 +1,29 @@
 package engine.core.input;
 
 import App_constants.Constants;
+import engine.core.EngineContext;
 import engine.core.SceneManager;
-import engine.grahpics.RenderableObject;
 import scene.Scene;
 
 import java.awt.event.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener {
 
-    private final Map<Integer, Runnable> globalKeyBindings = new HashMap<>();
     private final SceneManager sceneManager;
-    private int canvasWidth, canvasHeight;
 
     public InputHandler(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
     }
 
-    public void bindGlobalKey(int keyCode, Runnable runnable) {
-        globalKeyBindings.put(keyCode, runnable);
-    }
-
-    private Scene getCurrentScene() {
-        return sceneManager.getCurrentScene();
+    private SceneInputContext getInputContext() {
+        Scene scene = sceneManager.getCurrentScene();
+        return (scene != null) ? scene.getInputContext() : null;
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        int key = e.getKeyCode();
-
-        Runnable globalCommand = globalKeyBindings.get(key);
-        if (globalCommand != null) {
-            globalCommand.run();
-            return;
-        }
-
-        Scene scene = getCurrentScene();
-        if (scene != null && scene.getInputContext() != null) {
-            scene.getInputContext().handleKeyPressed(e);
-        }
+        SceneInputContext context = getInputContext();
+        if (context != null) context.onKeyPressed(e.getKeyCode());
     }
 
     @Override
@@ -53,16 +36,20 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 
     @Override
     public void mousePressed(MouseEvent e) {
-        Scene scene = getCurrentScene();
-        double[] coords = convertToGL(e.getX(), e.getY());
-        System.out.println(scene == null);
-        if (scene != null && scene.getInputContext() != null) {
-            scene.getInputContext().handleMousePressed(e, coords[0], coords[1]);
-        }
+        SceneInputContext context = getInputContext();
+        if (context == null) return;
+
+        double[] gl = convertToGL(e.getX(), e.getY());
+        context.onMousePressed(gl[0], gl[1], e.getButton());
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        SceneInputContext context = getInputContext();
+        if (context == null) return;
+
+        double[] gl = convertToGL(e.getX(), e.getY());
+        context.onMouseReleased(gl[0], gl[1]);
     }
 
     @Override
@@ -79,25 +66,25 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        Scene scene = getCurrentScene();
-        if (scene != null && scene.getInputContext() != null) {
-            double[] coords = convertToGL(e.getX(), e.getY());
-            scene.getInputContext().handleMouseMoved(coords[0], coords[1]);
-        }
+        SceneInputContext c = getInputContext();
+        if (c == null) return;
+
+        double[] gl = convertToGL(e.getX(), e.getY());
+        c.onMouseMoved(gl[0], gl[1]);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-    }
-
-    public void setCanvasSize(int width, int height) {
-        this.canvasWidth = width;
-        this.canvasHeight = height;
+        mouseMoved(e);
     }
 
     private double[] convertToGL(int mouseX, int mouseY) {
-        double glX = (mouseX / (double) canvasWidth) * (Constants.World.WIDTH) + Constants.World.MIN_X;
-        double glY = Constants.World.MAX_Y - (mouseY / (double) canvasHeight) * (Constants.World.HEIGHT);
+        EngineContext engineContext = EngineContext.get();
+        int pixelWidth = engineContext.getWorldPixelWidth();
+        int pixelHeight = engineContext.getWorldPixelHeight();
+
+        double glX = (mouseX / (double) pixelWidth) * Constants.World.ORTHO_WIDTH + Constants.World.ORTHO_LEFT;
+        double glY = Constants.World.ORTHO_TOP - (mouseY / (double) pixelHeight) * Constants.World.ORTHO_HEIGHT;
         return new double[]{glX, glY};
     }
 }

@@ -5,62 +5,86 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.util.FPSAnimator;
-import engine.core.collisions.CollisionManager;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+import com.jogamp.opengl.util.awt.TextRenderer;
 import engine.core.input.InputHandler;
-import engine.grahpics.Colors;
-import entities.base.Updatable;
-import entities.factory.FishFactory;
-import entities.fish.PlayerFish;
-import scene.GamePlayScene;
-import scene.PauseMenuScene;
-import scene.SceneType;
+import engine.graphics.Colors;
+import engine.shapes.ShapeType;
+import engine.texture.Sprite;
+import engine.ui.core.Button;
+import engine.ui.factory.ButtonFactory;
+import scene.*;
+import scene.game.GameScene;
+import scene.settings.SettingScene;
+import scene.settings.SettingsPlayerController;
 
-import java.awt.event.KeyEvent;
+import java.awt.*;
 
-public class GameController implements Updatable, GLEventListener {
+public class GameController implements GLEventListener {
     private final SceneManager sceneManager;
     private final InputHandler inputHandler;
-    private final FPSAnimator animator;
     private SceneType currentSceneType;
+    Sprite hazem;
+    Button button;
+    TextRenderer textRenderer;
 
-    public GameController(SceneManager sceneManager, InputHandler inputHandler , FPSAnimator animator) {
+    public GameController(SceneManager sceneManager, InputHandler inputHandler) {
         this.sceneManager = sceneManager;
         this.inputHandler = inputHandler;
         this.currentSceneType = SceneType.MAIN_MENU;
-        this.animator = animator;
     }
 
     @Override
     public void init(GLAutoDrawable glAutoDrawable) {
         GL2 gl = glAutoDrawable.getGL().getGL2();
-        gl.glClearColor(Colors.LIGHT_BLUE[0], Colors.LIGHT_BLUE[1], Colors.LIGHT_BLUE[2], 1.0f);
-        gl.glMatrixMode(GL2.GL_PROJECTION);
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
         gl.glLoadIdentity();
-        gl.glOrtho(Constants.World.MIN_X, Constants.World.MAX_X, Constants.World.MIN_Y, Constants.World.MAX_Y, -1, 1);
+        gl.glOrtho(Constants.World.ORTHO_LEFT, Constants.World.ORTHO_RIGHT, Constants.World.ORTHO_BOTTOM, Constants.World.ORTHO_TOP, -1, 1);
+        gl.glClearColor(Colors.LIGHT_BLUE[0], Colors.LIGHT_BLUE[1], Colors.LIGHT_BLUE[2], 1.0f);
 
-        PlayerFish player = new PlayerFish.Builder(20, 10).at(0, 0).build();
-        GamePlayScene scene = new GamePlayScene(player , new CollisionManager(), new FishFactory() , 10);
+        gl.glEnable(GL.GL_TEXTURE_2D);
+        gl.glEnable(GL.GL_BLEND);
+        gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 
-        sceneManager.addScene(SceneType.GAMEPLAY , scene);
-        sceneManager.addScene(SceneType.GAME_OVER , scene);
-        sceneManager.addScene(SceneType.PAUSE_MENU , new PauseMenuScene());
-        sceneManager.switchScene(SceneType.GAMEPLAY);
+        sceneManager.register(SceneType.MAIN_MENU, new SceneDescriptor(MainMenuScene::new, true));
+        sceneManager.register(SceneType.GAMEPLAY, new SceneDescriptor(GameScene::new, false));
+        sceneManager.register(SceneType.PAUSE_MENU, new SceneDescriptor(PauseMenuScene::new, true));
+        sceneManager.register(SceneType.SETTINGS, new SceneDescriptor(SettingScene::new, true));
+        sceneManager.register(SceneType.INSTRUCTIONS, new SceneDescriptor(InstructionScene::new, true));
+        sceneManager.register(SceneType.SETTINGS_PLAYER_CONTROLS, new SceneDescriptor(() -> new SettingsPlayerController(1) , true));
+        sceneManager.push(SceneType.MAIN_MENU);
 
-        inputHandler.bindGlobalKey(KeyEvent.VK_ESCAPE , this::handleEscapeKey);
+        hazem = new Sprite(0,0 , "resources/assets/textures/entities/rocket1.png" , 60 , 60);
+        button = ButtonFactory.builder()
+                        .geometricBackground(ShapeType.RECTANGLE , Colors.WHITE).
+                build();
+        textRenderer =new TextRenderer(new Font("SansSerif" , Font.BOLD ,  12));
     }
 
     @Override
     public void display(GLAutoDrawable glAutoDrawable) {
         GL2 gl = glAutoDrawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT);
+
+//        gl.glClear(GL.GL_COLOR_BUFFER_BIT);
+
+//        hazem.draw(gl);
+//
+//        textRenderer.beginRendering(800, 600);
+//        textRenderer.setColor(1f, 1f, 1f, 1f);
+//
+//        textRenderer.draw("hazem", 0,0);
+//
+//        textRenderer.endRendering();
 
         update(gl);
+//        button.draw(gl);
     }
 
     @Override
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
-        inputHandler.setCanvasSize(width , height);
+        EngineContext.get().updateViewport(width, height);
+
+//        glAutoDrawable.getGL().getGL2().glViewport(0, 0, width, height);
     }
 
     @Override
@@ -68,34 +92,10 @@ public class GameController implements Updatable, GLEventListener {
 
     }
 
-    @Override
+
     public void update(GL2 gl) {
         currentSceneType = sceneManager.getCurrentSceneType();
-        if (currentSceneType != SceneType.GAME_OVER) {
-            sceneManager.getCurrentScene().render(gl);
-        }
-    }
-
-
-    private void handleEscapeKey() {
-        switch (currentSceneType) {
-            case GAMEPLAY:
-                switchToScene(SceneType.PAUSE_MENU);
-                break;
-            case PAUSE_MENU:
-                switchToScene(SceneType.GAMEPLAY);
-                break;
-            case SETTINGS:
-            case INSTRUCTIONS:
-                switchToScene(SceneType.MAIN_MENU);
-                break;
-        }
-        System.out.println(currentSceneType);
-    }
-
-    public void switchToScene(SceneType newSceneType) {
-        sceneManager.switchScene(newSceneType);
-        currentSceneType = newSceneType;
+        sceneManager.getCurrentScene().render(gl);
     }
 
     public boolean isGamePlaying() {

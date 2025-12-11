@@ -5,6 +5,7 @@ public enum SceneType {
     GAMEPLAY,
     PAUSE_MENU,
     SETTINGS,
+    SETTINGS_PLAYER_CONTROLS,
     INSTRUCTIONS,
     GAME_OVER,
 }

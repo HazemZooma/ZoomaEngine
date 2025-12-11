@@ -4,6 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
+
 import engine.core.GameController;
 import engine.core.SceneManager;
 import engine.core.input.InputHandler;
@@ -23,14 +24,13 @@ public class FishGame extends JFrame {
 
         GLCapabilities caps = new GLCapabilities(GLProfile.getDefault());
         GLCanvas canvas = new GLCanvas(caps);
-        canvas.setBounds(0, 0, 800, 600);
 
         FPSAnimator animator = new FPSAnimator(canvas, 60);
 
 
         SceneManager sceneManager = SceneManager.getInstance();
         InputHandler inputHandler = new InputHandler(sceneManager);
-        GameController gameController = new GameController( sceneManager , inputHandler , animator);
+        GameController gameController = new GameController(sceneManager , inputHandler);
 
         canvas.addGLEventListener(gameController);
         canvas.addKeyListener(inputHandler);
@@ -40,7 +40,7 @@ public class FishGame extends JFrame {
 //        layeredPane.add(canvas, JLayeredPane.DEFAULT_LAYER);
 //
 //        JLabel winMessageLabel = new JLabel("YOU WIN!", JLabel.CENTER);
-//        winMessageLabel.setFont(new Font("Arial", Font.BOLD, 36));
+//        winMessageLabel.setFont(new FontType("Arial", FontType.BOLD, 36));
 //        winMessageLabel.setForeground(Color.RED);
 //        winMessageLabel.setBounds(0, 0, 800, 600);
 //        winMessageLabel.setVisible(false);

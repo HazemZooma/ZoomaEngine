@@ -1,6 +1,6 @@
 package behaviors;
 
-import entities.fish.Fish;
+import objects.core.GameObject;
 
 public class BounceMovement implements MovementBehavior {
 
@@ -13,26 +13,24 @@ public class BounceMovement implements MovementBehavior {
     }
 
     @Override
-    public void move(Fish fish) {
-        float[] transform = fish.getTransformation().getTranslation();
+    public void move(GameObject player) {
+        float[] transform = player.getTransformation().getTranslation();
         float x = transform[0];
         float y = transform[1];
-//        System.out.println("x: " + x + " y: " + y);
+
         x += dx;
         y += dy;
 
-        float halfWidth = fish.getWidth() / 2;
-        float halfHeight = fish.getHeight() / 2;
+        float halfWidth = player.getWidth() / 2;
+        float halfHeight = player.getHeight() / 2;
 
 
         if (x + halfWidth >= SCREEN_RIGHT) {
             x = SCREEN_RIGHT - halfWidth;
             dx = -dx;
-            if (!fish.isFacingRight()) fish.flip();
         } else if (x - halfWidth <= SCREEN_LEFT) {
             x = SCREEN_LEFT + halfWidth;
             dx = -dx;
-            if (fish.isFacingRight()) fish.flip();
         }
         if (y + halfHeight >= SCREEN_TOP) {
             y = SCREEN_TOP - halfHeight;
@@ -41,8 +39,8 @@ public class BounceMovement implements MovementBehavior {
             y = SCREEN_BOTTOM + halfHeight;
             dy = -dy;
         }
-//        System.out.println("X : " + x + "Y : " + y);
-        fish.getTransformation().translateTo(x, y);
+
+        player.getTransformation().translateTo(x, y);
     }
 
 }

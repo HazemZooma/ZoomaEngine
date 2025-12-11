@@ -1,0 +1,205 @@
+app package (Game);
+
+app constants(constants{world , math});
+
+Behaviors(Movement behavior (interface ) : Bounce movement sub class);
+
+engine(
+Command(UI(UI effect command command , UI manager input command) , command interface parent of all commands ,
+fire command , move to mouse command , hover scale effect command , move to mouse command , switch scene command , target provider interface);
+
+core(
+collisions(collision detector , collision manager);
+
+input package(input handler , scene input context, mouse input data);
+
+game controller implements updatable , GL Event listener ;
+
+scene manager;
+
+scene descriptor;
+);
+
+graphics(colors , renderable object parent of all classes that can are drawn on the screen);
+
+math (transformation);
+
+text(font type enum , text extends UI element , text renderer);
+
+ui(
+behaviors(Clickable interface , draggable interface , Hoverable interface);
+
+core(Button , modal , slider , UIElement extends renderable object , base class of {Button , modal , slider}));
+
+factory(Button factory , Modal factory);
+
+UI manager;
+);
+);
+
+objects(base(entity extends renderable object , Updatable interface));
+
+factory(fish factory);
+
+fish(Fish , Bot Fish extends fish ,player fish extends fish);
+
+Scene package(
+Scene(base class of all scenes) extends renderable object,
+Game over scene,Game play scene,Instructions scene,Main menu Scene,Pause scene,SceneType enum,
+settings(... Some settings scene classes));
+
+
+engine.shapes(base_shapes(triangle (with all variations like equilateral, scalene ,..etc), rectangle(any four quad)
+, circle(ellipse, ring , ..etc) , shape(abstract parent class of circle , rectangle, triangle) extends renderable object)
+, composite_shapes(Rounded rectangle) extends renderable object)
+);
+
+
+app/
+│
+├── engine/
+│   │
+│   ├── ecs/
+│   │     ├─ Entity              # (int ID)
+│   │     ├─ World               # Holds all objects + components
+│   │     ├─ ComponentStore      # Storage for each component type
+│   │     ├─ System              # Base system interface
+│   │     ├─ Query               # Entity queries by component signature
+│   │     └─ Scheduler           # Manages system update order
+│   │
+|    │   ├── resources/               # Global engine resources
+    │   │     ├─ Renderer            # Low-level rendering (OpenGL)
+    │   │     ├─ TextureManager
+    │   │     ├─ AudioManager
+    │   │     ├─ InputHandler
+    │   │     ├─ EventDispatcher
+    │   │     └─ Time                # Delta time, frame timing
+│   │
+│   ├── systems/                 # Core ECS systems
+│   │     ├─ RenderSystem
+│   │     ├─ TextRenderSystem
+│   │     ├─ SpriteBatchSystem
+│   │     ├─ MovementSystem
+│   │     ├─ CollisionSystem
+│   │     ├─ PhysicsSystem
+│   │     ├─ InputSystem
+│   │     ├─ UISystem            # ECS-optional for game UI
+│   │     └─ AudioSystem         # For playing SFX from components
+│   │
+│   ├── components/              # Pure data components
+│   │     ├─ TransformComponent
+│   │     ├─ SpriteComponent
+│   │     ├─ TextComponent
+│   │     ├─ CollisionComponent
+│   │     ├─ RigidBodyComponent
+│   │     ├─ MovementComponent
+│   │     ├─ InputComponent
+│   │     ├─ UIComponent         # UI state data
+│   │     ├─ AudioEmitterComponent # Play SFX on events
+│   │     └─ BehaviorComponent   # Links to behavior scripts
+│   │
+│   ├── graphics/
+│   │     ├── engine.shapes/        # Still part of renderer utils
+│   │     │     ├─ Shape
+│   │     │     ├─ Triangle, Rectangle, Circle...
+│   │     └── text/
+│   │           ├─ FontLoader
+│   │           └─ TextMetrics
+│   │
+│   ├── audio/
+│   │     ├─ SoundEffect
+│   │     ├─ AudioLoader
+│   │     └─ AudioPlayer
+│   │
+│   ├── input/
+│   │     ├─ InputMapper
+│   │     └─ MouseInputData
+│   │
+│   ├── math/
+│   │     └─ Transformation
+│   │
+│   └── events/
+│         ├─ Event
+│         ├─ MouseEvent, KeyEvent, UIEvent
+│         ├─ EventListener
+│         └─ EventDispatcher
+│
+│
+├── core/                          # Game framework (ECS-based)
+│   │
+│   ├── assets/
+│   │     ├─ ResourceManager
+│   │     ├─ TextureLoader
+│   │     ├─ AudioLoader
+│   │     ├─ FontLoader
+│   │     └─ AssetPaths
+│   │
+│   ├── scene/
+│   │     ├─ SceneManager
+│   │     ├─ Scene                  # Each Scene contains an ECS World
+│   │     └─ SceneGraph             # (Optional, for hierarchical systems)
+│   │
+│   ├── factories/
+│   │     ├─ EntityFactory          # Creates objects with component bundles
+│   │     ├─ FishFactory
+│   │     └─ EffectFactory
+│   │
+│   ├── behaviors/                  # Becomes data + system-driven
+│   │     ├─ MovementBehavior       # Convert to data components + logic system
+│   │     ├─ BounceMovement
+│   │     ├─ FollowMovement
+│   │     └─ PatrolMovement
+│   │
+│   └── GameController              # Bootstraps everything
+│
+│
+├── game/                           # Game-specific ECS layer
+│   │
+│   ├── components/                 # Game-specific data components
+│   │     ├─ FishAIComponent
+│   │     ├─ HealthComponent
+│   │     ├─ DamageComponent
+│   │     ├─ ScoreComponent
+│   │     └─ PlayerTagComponent
+│   │
+│   ├── systems/                    # Game logic systems
+│   │     ├─ FishAISystem
+│   │     ├─ EatingSystem
+│   │     ├─ ScoreSystem
+│   │     ├─ PlayerControlSystem
+│   │     └─ BubbleSpawnSystem
+│   │
+│   ├── scenes/
+│   │     ├─ MainMenuScene
+│   │     ├─ GamePlayScene
+│   │     ├─ PauseScene
+│   │     └─ InstructionsScene
+│   │
+│   ├── ui/
+│   │     ├─ HealthBarUI
+│   │     ├─ ScoreDisplayUI
+│   │     ├─ TimerDisplayUI
+│   │     └─ GameMenuUI
+│   │
+│   └── sounds/
+│         ├─ CombatSounds
+│         ├─ UISounds
+│         └─ EnvironmentSounds
+│
+├── config/
+│   ├─ GameConfig
+│   ├─ AudioConfig
+│   ├─ InputConfig
+│   ├─ GraphicsConfig
+│   └─ SettingsManager
+│
+├── constants/
+│   ├─ GameConstants
+│   ├─ WorldConstants
+│   └─ TimeConstants
+│
+└── utils/
+      ├─ Logger
+      ├─ Random
+      ├─ ColorUtils
+      └─ TimeUtils

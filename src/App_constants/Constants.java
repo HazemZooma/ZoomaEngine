@@ -11,11 +11,11 @@ public class Constants {
     }
 
     public static class World {
-        public static final int WIDTH = 500;
-        public static final int HEIGHT = 300;
-        public static final int MIN_X = -250;
-        public static final int MAX_X = 250;
-        public static final int MIN_Y = -150;
-        public static final int MAX_Y = 150;
+        public static final int ORTHO_WIDTH = 500;
+        public static final int ORTHO_HEIGHT = 300;
+        public static final int ORTHO_LEFT = -250;
+        public static final int ORTHO_RIGHT = 250;
+        public static final int ORTHO_BOTTOM = -150;
+        public static final int ORTHO_TOP = 150;
     }
 }
